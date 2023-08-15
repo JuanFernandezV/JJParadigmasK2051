@@ -153,3 +153,18 @@ not(persigue(Rey,_)), not(comio(Rey,_)),
 findall(Perseguidor, persigue(Perseguidor,Rey), Perseguidor1),
 length(Perseguidor1, Cant),
 Cant=1.
+
+rey(R) :-
+    setof(Perseguido, persigue(_, Perseguido), Perseguidos),
+    reyAux(R, Perseguidos).
+
+reyAux(R, [R]) :- \+ persigue(_, R), \+ adora(_, R).
+reyAux(R, [R | _]) :- persigue(_, R), forall((persigue(_, Otra), Otra \= R), adora(Otra, R)).
+
+adora(Animal1, Animal2) :- \+ persigue(Animal1, Animal2).
+
+% a. Polimorfismo: El polimorfismo se utiliza en la definición del predicado cuantoEngorda y su versión recursiva. Se manejan varios tipos de bichos (hormigas, vaquitas de San Antonio, cucarachas) y el predicado se adapta para funcionar con cualquiera de estos tipos, lo que refleja el concepto de polimorfismo.
+
+% b. Recursividad: La recursividad se usa en el predicado cuantoEngordaRecursivo para calcular el peso total de un personaje considerando lo que comió y lo que comieron sus víctimas, teniendo en cuenta que cada víctima también puede haber comido a otras víctimas.
+
+% c. Inversibilidad: En los predicados jugosita, hormigofilico, cucarachofobico, picarones, combinaComidas y rey, se hacen consultas en ambas direcciones, es decir, se pueden hacer preguntas tanto sobre variables sin instanciar como sobre variables ya instanciadas. Esto es posible gracias a la inversibilidad de Prolog, que permite tanto buscar soluciones como generar posibles valores para las variables.
