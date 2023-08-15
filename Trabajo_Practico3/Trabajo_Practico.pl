@@ -117,4 +117,39 @@ cuantoEngorda([Victima | Resto], PesoTotal) :-
     cuantoEngorda(Resto, PesoResto),
     PesoTotal = PesoVictima + PesoResto.
 
+% 3
+% Utilizamos recursividad en este caso para generar todas las combinaciones posibles con respecto a la comida
+listaComidas(Personaje, Lista1):-
+comio(Personaje, _),
+not(persigue(Personaje, _)),
+findall(Bicho, comio(Personaje, Bicho), Lista1).
 
+
+listaComidas(Personaje, Lista1):-
+persigue(Personaje, _),
+not(comio(Personaje, _)),
+findall(Personje2, persigue(Personaje, Personaje2), Lista1).
+
+
+listaComidas(Personaje, ListaT):-
+persigue(Personaje, _),
+comio(Personaje, _),
+findall(Bicho, comio(Personaje, Bicho), Lista1),
+findall(Personje2, persigue(Personaje, Personaje2), Lista2),
+append(Lista1, Lista2, ListaT).
+
+subconjunto([], []).
+subconjunto([X|Resto], [X|Sub]) :- subconjunto(Resto, Sub).
+subconjunto([_|Resto], Sub) :- subconjunto(Resto, Sub).
+
+combinaComidas(Personaje, ListaComidas):-
+listaComidas(Personaje, Lis),
+subconjunto(Lis, ListaComidas).
+
+% 4
+rey(Rey):-
+persigue(_,Rey),
+not(persigue(Rey,_)), not(comio(Rey,_)),
+findall(Perseguidor, persigue(Perseguidor,Rey), Perseguidor1),
+length(Perseguidor1, Cant),
+Cant=1.
