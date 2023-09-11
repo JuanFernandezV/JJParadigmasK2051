@@ -43,18 +43,28 @@ hormigofílico(Personaje) :-
 
 % 1) c.
 
+
 cucarachofibico(Personaje) :-
-    not(comio(Personaje, cucaracha(_, _, _))).
+    comio(Personaje, Bicho),
+    not(esCucaracha(Bicho)).
 
 % 1) d.
 
-picaron(pumba). % pumba es picaron de por si
-picaron(Personaje) :-                                   % Inversibilidad, para acotar el conjunto consultado
-    comio(Personaje, cucaracha(_, _, _)),
-    jugosita(cucaracha(_, _, _)).
-picaron(Personaje) :-
-    comio(Personaje, vaquitaSanAntonio(remeditos, _)).
+picarones([pumba]). % Lista de picarones iniciales
 
+picaron(pumba, _). % Pumba es picarón de por sí
+
+picaron(Personaje, Picarones) :-
+    comio(Personaje, cucaracha(_, _, _)),
+    jugosita(cucaracha(_, _, _)),
+    \+ member(Personaje, Picarones).    % funcion de orden superior member
+
+picaron(Personaje, Picarones) :-
+    comio(Personaje, vaquitaSanAntonio(remeditos, _)),
+    \+ member(Personaje, Picarones).
+
+picarones(Picarones) :-
+    findall(Personaje, picaron(Personaje, Picarones), Picarones).
 
 % 2) 
 
@@ -89,7 +99,7 @@ cuantoEngorda(Personaje, PesoTotal) :-
     peso(Personaje, PesoPersonaje),
     PesoTotal is PesoPersonaje + PesoComida,
     persigue(_, Personaje),
-    cuantoEngorda(_, PesoPerseguido),
+    cuantoEngorda(_, PesoPerseguido),           % recursividad para obtener el peso si persigue a mas de una victima
     PesoTotal is PesoTotal + PesoPerseguido.
     
 cuantoEngorda(Personaje, PesoTotal) :-
@@ -105,7 +115,7 @@ cuantoEngorda(Personaje, PesoTotal) :-
     sumlist(Pesos, PesoComida),
     peso(Personaje, PesoPersonaje),
     pesoVictimas(Personaje, PesoVictimas),
-    PesoTotal = PesoPersonaje + PesoComida + PesoVictimas.          % Unificacion
+    PesoTotal is PesoPersonaje + PesoComida + PesoVictimas.          % Unificacion
 
 pesoVictimas(Personaje, PesoTotal) :-
     findall(Victima, persigue(Personaje, Victima), Victimas),
@@ -115,7 +125,7 @@ cuantoEngorda([], 0).                           % Recursividad para calcular cua
 cuantoEngorda([Victima | Resto], PesoTotal) :-  
     cuantoEngorda(Victima, PesoVictima),
     cuantoEngorda(Resto, PesoResto),
-    PesoTotal = PesoVictima + PesoResto.
+    PesoTotal is PesoVictima + PesoResto.
 
 % 3
 % Utilizamos recursividad en este caso para generar todas las combinaciones posibles con respecto a la comida
@@ -147,21 +157,22 @@ listaComidas(Personaje, Lis),
 subconjunto(Lis, ListaComidas).
 
 % 4
-rey(Rey):-
-persigue(_,Rey),
-not(persigue(Rey,_)), not(comio(Rey,_)),
-findall(Perseguidor, persigue(Perseguidor,Rey), Perseguidor1),
-length(Perseguidor1, Cant),
-Cant=1.
+rey(Rey) :-
+    persigue(_, Rey),                      
+    not(persigue(Rey, _)),                 
+    not(comio(Rey, _)),                    
+    forall((persigue(Animal, _), Animal \= Rey), adora(Animal, Rey)), 
+    soloUnPerseguidor(Rey).                
 
-rey(R) :-
-    setof(Perseguido, persigue(_, Perseguido), Perseguidos),
-    reyAux(R, Perseguidos).
+adora(Animal, Rey) :-
+    Animal \= Rey,
+    not(persigue(Animal, Rey)),
+    not(comio(Animal, Rey)).
 
-reyAux(R, [R]) :- \+ persigue(_, R), \+ adora(_, R).
-reyAux(R, [R | _]) :- persigue(_, R), forall((persigue(_, Otra), Otra \= R), adora(Otra, R)).
+soloUnPerseguidor(Rey) :-
+    findall(Perseguidor, persigue(Perseguidor, Rey), Perseguidores),
+    length(Perseguidores, 1).
 
-adora(Animal1, Animal2) :- \+ persigue(Animal1, Animal2).
 
 % a. Polimorfismo: El polimorfismo se utiliza en la definición del predicado cuantoEngorda y su versión recursiva. Se manejan varios tipos de bichos (hormigas, vaquitas de San Antonio, cucarachas) y el predicado se adapta para funcionar con cualquiera de estos tipos, lo que refleja el concepto de polimorfismo.
 
